@@ -1,0 +1,8 @@
+<div style="height: 300px;"
+     leaflet
+     [leafletOptions]="options"
+    (leafletMapReady)="onMapReady($event)">
+    <div *ngFor="let p of polygones" [leafletLayer]="p"></div>
+</div>
+
+<button (click)="onStartPolygone($event)" >{{onDraw ? 'End Polygone' : 'Start Polygone'}}</button>
