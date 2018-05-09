@@ -1,5 +1,7 @@
 import { Component } from '@angular/core';
-import { tileLayer, latLng, marker, icon, Map, Popup, Polygon, LatLng, MapOptions, LeafletMouseEvent } from 'leaflet';
+import { tileLayer, latLng, marker, icon, Map, Popup, Polygon,
+  LatLng, MapOptions, LeafletMouseEvent, CRS, imageOverlay, bounds, Bounds, LatLngBounds } from 'leaflet';
+import { Alert } from 'selenium-webdriver';
 
 @Component({
   selector: 'app-root',
@@ -9,7 +11,7 @@ import { tileLayer, latLng, marker, icon, Map, Popup, Polygon, LatLng, MapOption
 export class AppComponent {
   options: MapOptions  = {
     layers: [
-      tileLayer(
+      /*tileLayer(
         'https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}',
         {
           maxZoom: 18,
@@ -20,7 +22,8 @@ export class AppComponent {
             id: 'mapbox.streets',
             accessToken: 'pk.eyJ1IjoiaGVua2Vuc20iLCJhIjoiY2pnejk0dmozMjY4dDMzcWp0N3d0M3hzbSJ9.Nw6Zuz1vpmXlvwq_TTqLDQ'
         }
-      ),
+      ),*/
+      imageOverlay('assets/Anuire.jpg',new LatLngBounds([0,0], [1100, 1027]) ),
       marker([ 51.5, -0.09 ], {
         icon: icon({
            iconSize: [ 25, 41 ],
@@ -30,7 +33,9 @@ export class AppComponent {
         })
      })
     ],
+    crs: CRS.Simple,
     zoom: 13,
+    minZoom: -5,
     center: latLng(51.505, -0.09),
   };
 
@@ -59,6 +64,7 @@ export class AppComponent {
     } else {
       this.map.removeEventListener('click', this.drawPolygone, this);
       delete this.polygone;
+      delete this.polygonBoundary;
       this.onDraw = false;
     }
   }
@@ -72,15 +78,15 @@ export class AppComponent {
       this.polygone = new Polygon([event.latlng],
         {color: 'red',
         fillColor: '#f03',
-        fillOpacity: 0.5});
+        fillOpacity: 0.01});
     } else {
       this.polygonBoundary.push(event.latlng);
       this.polygone.setLatLngs(this.polygonBoundary);
       if (this.polygonBoundary.length === 3) {
-        if(!this.polygones) {
-          this.polygones = [];
-        }
-       this.polygones.push(this.polygone);
+        this.polygone.addEventListener('click' , (evt: LeafletMouseEvent) => {
+          alert('polygone click');
+        }, this);
+          this.polygones.push(this.polygone);
       }
     }
 
