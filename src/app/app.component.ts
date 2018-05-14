@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectorRef } from '@angular/core';
 import { tileLayer, latLng, marker, icon, Map, Popup, Polygon,
   LatLng, MapOptions, LeafletMouseEvent, CRS, imageOverlay, bounds, Bounds, LatLngBounds } from 'leaflet';
 import { Alert } from 'selenium-webdriver';
@@ -23,7 +23,7 @@ export class AppComponent {
             accessToken: 'pk.eyJ1IjoiaGVua2Vuc20iLCJhIjoiY2pnejk0dmozMjY4dDMzcWp0N3d0M3hzbSJ9.Nw6Zuz1vpmXlvwq_TTqLDQ'
         }
       ),*/
-      imageOverlay('assets/Anuire.jpg',new LatLngBounds([0,0], [1100, 1027]) ),
+      imageOverlay('assets/Anuire.jpg', new LatLngBounds([0, 0], [1100, 1027]) ),
       marker([ 51.5, -0.09 ], {
         icon: icon({
            iconSize: [ 25, 41 ],
@@ -34,9 +34,9 @@ export class AppComponent {
      })
     ],
     crs: CRS.Simple,
-    zoom: 13,
+    zoom: 1,
     minZoom: -5,
-    center: latLng(51.505, -0.09),
+    center: latLng(500, 500),
   };
 
   public polygones: Polygon[] = [];
@@ -50,6 +50,10 @@ export class AppComponent {
   public onDraw = false;
 
   private polygonBoundary: LatLng [];
+
+  constructor (private changeDetectorRef: ChangeDetectorRef) {
+
+  }
 
   public onMapReady(event: Map): void {
     this.map = event;
@@ -82,11 +86,14 @@ export class AppComponent {
     } else {
       this.polygonBoundary.push(event.latlng);
       this.polygone.setLatLngs(this.polygonBoundary);
+      // this.changeDetectorRef.detectChanges();
+      this.changeDetectorRef.markForCheck();
       if (this.polygonBoundary.length === 3) {
         this.polygone.addEventListener('click' , (evt: LeafletMouseEvent) => {
           alert('polygone click');
         }, this);
           this.polygones.push(this.polygone);
+          this.map.addLayer(this.polygone);
       }
     }
 
