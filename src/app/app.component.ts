@@ -2,6 +2,10 @@ import { Component, ChangeDetectorRef } from '@angular/core';
 import { tileLayer, latLng, marker, icon, Map, Popup, Polygon,
   LatLng, MapOptions, LeafletMouseEvent, CRS, imageOverlay, bounds, Bounds, LatLngBounds } from 'leaflet';
 import { Alert } from 'selenium-webdriver';
+import { StompService } from '@stomp/ng2-stompjs';
+import { Message } from '@stomp/stompjs';
+import { Polygone } from './polygone';
+
 
 @Component({
   selector: 'app-root',
@@ -51,12 +55,42 @@ export class AppComponent {
 
   private polygonBoundary: LatLng [];
 
-  constructor (private changeDetectorRef: ChangeDetectorRef) {
+  public textInput: string;
 
+  public poly: Polygone[] = [];
+
+  constructor (private changeDetectorRef: ChangeDetectorRef, private stompService: StompService) {
+    this.onConnect();
+  }
+
+  private stompSubscription;
+
+  public onConnect(): void {
+    this.stompSubscription = this.stompService.subscribe('/topic/polygone/list');
+
+    this.stompSubscription.subscribe((msg_body: Message) => {
+      const json: any = JSON.parse(msg_body.body);
+      let found = false;
+      for (const p of this.poly) {
+        if (p.id === json.id) {
+          p.points = json.points;
+          found = true;
+        }
+      }
+
+      if (!found) {
+        this.poly.push(json);
+      }
+
+    });
   }
 
   public onMapReady(event: Map): void {
     this.map = event;
+  }
+
+  public onSend(): void {
+
   }
 
 
@@ -67,6 +101,7 @@ export class AppComponent {
       this.onDraw = true;
     } else {
       this.map.removeEventListener('click', this.drawPolygone, this);
+      this.stompService.publish('/app/polygone/save', JSON.stringify(new Polygone(this.polygone)));
       delete this.polygone;
       delete this.polygonBoundary;
       this.onDraw = false;
